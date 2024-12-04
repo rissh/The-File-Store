@@ -1,0 +1,15 @@
+# Python-related
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+*.venv
+
+# Virtual environment
+env/
+venv/
+
+# Storage directory
+server/storage/*
+!server/storage/.gitkeep
