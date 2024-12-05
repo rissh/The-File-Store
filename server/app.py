@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from pathlib import Path
 import os, re
 from typing import List 
+from collections import Counter
 
 app = FastAPI()
 
@@ -96,3 +97,28 @@ def word_count():
                 total_words += len(re.findall(r'\w+', content))  # Counting words
 
     return {"total_word_count": total_words}
+
+@app.get("/freq-words")
+def freq_words(limit: int = Query(10, alias="n"), order: str = Query("dsc")):
+    """
+    Get the most or least frequent words across all files.
+    """
+    word_counts = Counter()
+
+    # Read and process each file in the storage directory
+    for file_name in os.listdir(STORAGE_DIR):
+        file_path = os.path.join(STORAGE_DIR, file_name)
+        if os.path.isfile(file_path):
+            with open(file_path, "r") as f:
+                content = f.read()
+                # Tokenize words and update the counter
+                words = re.findall(r'\w+', content.lower())  # Case insensitive
+                word_counts.update(words)
+
+    # Sort by frequency
+    sorted_words = word_counts.most_common() if order == "dsc" else sorted(word_counts.items(), key=lambda x: x[1])
+
+    # Limit the results
+    result = sorted_words[:limit]
+
+    return {"words": result}

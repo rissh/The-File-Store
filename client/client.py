@@ -114,6 +114,25 @@ def wc():
     else:
         typer.echo(f"Error: {response.text}")
         raise typer.Exit(code=1)
+    
+@app.command()
+def freq_words(n: int = 10, order: str = "dsc"):
+    """
+    Fetch the most or least frequent words across all files on the server.
+    """
+    if order not in ["dsc", "asc"]:
+        typer.echo("Invalid order. Use 'dsc' for descending or 'asc' for ascending.")
+        raise typer.Exit(code=1)
+
+    response = requests.get(f"{BASE_URL}/freq-words", params={"n": n, "order": order})
+
+    if response.status_code == 200:
+        typer.echo("Frequent Words:")
+        for word, count in response.json().get("words", []):
+            typer.echo(f"{word}: {count}")
+    else:
+        typer.echo(f"Error: {response.text}")
+
 
 if __name__ == "__main__":
     app()
