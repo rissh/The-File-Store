@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "the-file-store"
+version = "0.1.0"
+description = "A file store with a client-server architecture"
+authors = ["Your Name <your.email@example.com>"]
+license = "MIT"
+packages = [{ include = "src" }]
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.95.0"
+typer = "^0.6.1"
+requests = "^2.28.1"
+uvicorn = "^0.20.0"
+python-dotenv = "^0.21.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0"
+
+[tool.poetry.scripts]
+store = "src.client.client:app"
