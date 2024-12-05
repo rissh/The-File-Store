@@ -44,6 +44,26 @@ def add(files: List[Path]):
     else:
         typer.echo(f"Unexpected error: {response.text}")
         raise typer.Exit(code=1)
+    
+@app.command()
+def ls():
+    """
+    List all files stored on the server.
+    """
+    SERVER_URL = "http://127.0.0.1:8000/list"  # Endpoint
+
+    response = requests.get(SERVER_URL)
+
+    if response.status_code == 200:
+        data = response.json()
+        if "files" in data:
+            typer.echo("Files on the server:")
+            for file in data["files"]:
+                typer.echo(f"- {file['name']} ({file['size']} bytes)")
+        else:
+            typer.echo(data["message"])  # No files found
+    else:
+        typer.echo("Failed to fetch file list from the server.")
 
 if __name__ == "__main__":
     app()

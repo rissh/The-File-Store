@@ -31,3 +31,20 @@ async def add_file(files: List[UploadFile]):
         responses.append({"file": file.filename, "message": "File uploaded successfully"})
 
     return responses
+
+@app.get("/list")
+def list_files():
+    files = []
+    for file_name in os.listdir(STORAGE_DIR):
+
+        if file_name.startswith("."):   #Hidden files
+            continue
+
+        file_path = os.path.join(STORAGE_DIR, file_name)
+        if os.path.isfile(file_path):
+            files.append({"name": file_name, "size": os.path.getsize(file_path)})
+    
+    if not files:
+        return {"message": "No files found."}
+    
+    return {"files": files}
