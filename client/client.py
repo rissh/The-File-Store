@@ -5,7 +5,7 @@ from typing import List
 
 app = typer.Typer()
 
-SERVER_URL = "http://127.0.0.1:8000/upload"
+BASE_URL = "http://127.0.0.1:8000"
 
 @app.command()
 def hello():
@@ -29,7 +29,7 @@ def add(files: List[Path]):
         file_data.append(("files", (file.name, file.open("rb"))))
 
     # Send files to the server
-    response = requests.post(SERVER_URL, files=file_data)
+    response = requests.post(f"{BASE_URL}/upload", files=file_data)
 
     if response.status_code == 200:
         typer.echo("Files uploaded successfully!")
@@ -50,9 +50,7 @@ def ls():
     """
     List all files stored on the server.
     """
-    SERVER_URL = "http://127.0.0.1:8000/list"  # Endpoint
-
-    response = requests.get(SERVER_URL)
+    response = requests.get(f"{BASE_URL}/list")
 
     if response.status_code == 200:
         data = response.json()
@@ -64,6 +62,23 @@ def ls():
             typer.echo(data["message"])  # No files found
     else:
         typer.echo("Failed to fetch file list from the server.")
+
+@app.command()
+def rm(filename: str):
+    """
+    Remove a file from the store.
+    """
+    typer.echo(f"Attempting to remove file: {filename}")
+
+    # Send DELETE request to server
+    response = requests.delete(f"{BASE_URL}/delete", params={"filename": filename})
+
+    if response.status_code == 200:
+        typer.echo(f"File '{filename}' removed successfully!")
+    elif response.status_code == 404:
+        typer.echo(f"File '{filename}' not found on the server.")
+    else:
+        typer.echo(f"Error: {response.text}")
 
 if __name__ == "__main__":
     app()

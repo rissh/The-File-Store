@@ -1,5 +1,6 @@
-from fastapi import FastAPI, UploadFile, HTTPException
+from fastapi import FastAPI, UploadFile, HTTPException, Query
 from fastapi.responses import JSONResponse
+from pathlib import Path
 import os
 from typing import List 
 
@@ -48,3 +49,19 @@ def list_files():
         return {"message": "No files found."}
     
     return {"files": files}
+
+@app.delete("/delete")
+async def delete_file(filename: str = Query(...)):
+    """
+    Delete a file from the server.
+    """
+    file_path = Path(STORAGE_DIR) / filename
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail=f"File '{filename}' not found")
+
+    try:
+        file_path.unlink()  # Delete the file
+        return {"message": f"File '{filename}' deleted successfully!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting file: {str(e)}")
