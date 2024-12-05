@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, HTTPException, Query, File
 from fastapi.responses import JSONResponse
 from pathlib import Path
-import os
+import os, re
 from typing import List 
 
 app = FastAPI()
@@ -78,3 +78,21 @@ async def update_file(filename: str, file: UploadFile = File(...)):
         f.write(await file.read())
 
     return {"message": f"File '{filename}' updated/created successfully!"}
+
+@app.get("/wc")
+def word_count():
+    """
+    Count the total number of words in all files stored in the server.
+    """
+    total_words = 0
+    for file_name in os.listdir(STORAGE_DIR):
+        if file_name.startswith("."):  # Ignore hidden files
+            continue
+
+        file_path = os.path.join(STORAGE_DIR, file_name)
+        if os.path.isfile(file_path):
+            with open(file_path, "r") as f:
+                content = f.read()
+                total_words += len(re.findall(r'\w+', content))  # Counting words
+
+    return {"total_word_count": total_words}

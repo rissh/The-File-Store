@@ -100,6 +100,20 @@ def update(filename: str, file: Path):
     else:
         typer.echo(f"Error: {response.text}")
         raise typer.Exit(code=1)  # Exit 
+    
+@app.command()
+def wc():
+    """
+    Get the total word count from all files stored on the server.
+    """
+    response = requests.get(f"{BASE_URL}/wc")
+
+    if response.status_code == 200:
+        word_count = response.json()
+        typer.echo(f"Total word count across all files: {word_count['total_word_count']}")
+    else:
+        typer.echo(f"Error: {response.text}")
+        raise typer.Exit(code=1)
 
 if __name__ == "__main__":
     app()
