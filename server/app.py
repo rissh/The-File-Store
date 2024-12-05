@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, HTTPException, Query
+from fastapi import FastAPI, UploadFile, HTTPException, Query, File
 from fastapi.responses import JSONResponse
 from pathlib import Path
 import os
@@ -65,3 +65,16 @@ async def delete_file(filename: str = Query(...)):
         return {"message": f"File '{filename}' deleted successfully!"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting file: {str(e)}")
+    
+@app.put("/update")
+async def update_file(filename: str, file: UploadFile = File(...)):
+    """
+    Update the contents of an existing file, or create it if it doesn't exist.
+    """
+    file_path = Path(STORAGE_DIR) / filename
+
+    # If the file already exists, it will be overwritten
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+
+    return {"message": f"File '{filename}' updated/created successfully!"}

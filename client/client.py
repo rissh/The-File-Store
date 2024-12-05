@@ -70,7 +70,7 @@ def rm(filename: str):
     """
     typer.echo(f"Attempting to remove file: {filename}")
 
-    # Send DELETE request to server
+    # DELETE request
     response = requests.delete(f"{BASE_URL}/delete", params={"filename": filename})
 
     if response.status_code == 200:
@@ -79,6 +79,27 @@ def rm(filename: str):
         typer.echo(f"File '{filename}' not found on the server.")
     else:
         typer.echo(f"Error: {response.text}")
+
+@app.command()
+def update(filename: str, file: Path):
+    """
+    Update the content of a file on the server, or create it if it does not exist.
+    """
+    if not file.exists():
+        typer.echo(f"Local file '{file}' does not exist.")
+        raise typer.Exit(code=1)  # Exit if local file not exist
+
+    with file.open("rb") as f:
+        file_data = f.read()  
+
+    # Sending request
+    response = requests.put(f"{BASE_URL}/update?filename={filename}", files={"file": (filename, file_data)})
+
+    if response.status_code == 200:
+        typer.echo(f"File '{filename}' updated/created successfully!")
+    else:
+        typer.echo(f"Error: {response.text}")
+        raise typer.Exit(code=1)  # Exit 
 
 if __name__ == "__main__":
     app()
