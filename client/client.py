@@ -21,29 +21,44 @@ def add(files: List[Path]):
     Add files to the store.
     """
     file_data = []
+    failed_files = []  # already exist
 
     for file in files:
         if not file.exists():
-            typer.echo(f"File '{file}' does not exist.")
-            raise typer.Exit(code=1)  # File not exist locally
+            typer.echo(f"File '{file}' does not exist locally.")
+            raise typer.Exit(code=1)  # File does not exist locally
+        
+        # if the file already exists
+        response = requests.get(f"{BASE_URL}/list")
+        existing_files = [file['name'] for file in response.json().get('files', [])]
+
+        if file.name in existing_files:
+            failed_files.append(file.name)
+            typer.echo(f"Error: File '{file.name}' already exists.")
+            continue  # Skip and continue with others
+
+        # If the file doesn't exist
         file_data.append(("files", (file.name, file.open("rb"))))
 
-    # Send files to the server
-    response = requests.post(f"{BASE_URL}/upload", files=file_data)
+    # Send files
+    if file_data:
+        response = requests.post(f"{BASE_URL}/upload", files=file_data)
 
-    if response.status_code == 200:
-        typer.echo("Files uploaded successfully!")
-        # Details for each uploaded file
-        for file_response in response.json():
-            typer.echo(f"File: {file_response['file']} - {file_response['message']}")
+        if response.status_code == 200:
+            typer.echo("Files uploaded successfully!")
+            # Details for uploaded file
+            for file_response in response.json():
+                typer.echo(f"File: {file_response['file']} - {file_response['message']}")
+        else:
+            typer.echo(f"Unexpected error: {response.text}")
+            raise typer.Exit(code=1)
 
-    elif response.status_code == 400:  # If file already exists
-        typer.echo(f"Error: {response.json()['detail']}")
-        raise typer.Exit(code=1)  # Exit with non-zero code
-    
-    else:
-        typer.echo(f"Unexpected error: {response.text}")
-        raise typer.Exit(code=1)
+    # skipped files
+    if failed_files:
+        typer.echo(f"\nThe following files were not uploaded because they already exist on the server:")
+        for failed_file in failed_files:
+            typer.echo(f"- {failed_file}")
+
     
 @app.command()
 def ls():
