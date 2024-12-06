@@ -69,3 +69,27 @@ store [command]
 - update: Update a file on the server.
 - wc: Get the total word count from all files stored.
 - freq_words: Get the most or least frequent words across all files.
+
+# Install via Docker/Podman (Coming Soon)
+Docker image setup and usage are under development. Once available, you will be able to:
+
+Build the Docker Image: You will be able to build the Docker image using:
+
+```bash
+podman build -t file-store .
+```
+
+Run the Docker Container: After building the image, you can run the container:
+
+```bash
+podman run -it file-store
+```
+
+The tool will execute commands like store hello inside the container.
+Pull the Docker Image from the Registry: You will be able to pull the image directly from a registry with:
+
+```bash
+podman pull <coming-soon>/file-store:latest
+```
+
+And run it as needed.
